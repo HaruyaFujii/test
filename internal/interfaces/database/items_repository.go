@@ -138,6 +138,28 @@ func (r *ItemRepository) GetSummaryByCategory(ctx context.Context) (map[string]i
 	return summary, nil
 }
 
+func (r *ItemRepository) Update(ctx context.Context, item *entity.Item) (*entity.Item, error) {
+	query := `
+		UPDATE items
+		SET name = ?, category = ?, brand = ?, purchase_price = ?, purchase_date = ?, updated_at = ?
+		WHERE id = ?
+	`
+	_, err := r.Execute(ctx, query,
+		item.Name,
+		item.Category,
+		item.Brand,
+		item.PurchasePrice,
+		item.PurchaseDate,
+		item.UpdatedAt,
+		item.ID,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", domainErrors.ErrDatabaseError, err.Error())
+	}
+
+	return r.FindByID(ctx, item.ID)
+}
+
 func scanItem(scanner interface {
 	Scan(dest ...interface{}) error
 }) (*entity.Item, error) {
